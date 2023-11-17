@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 
 class StudentDB
 {
@@ -7,7 +8,11 @@ class StudentDB
     public StudentDB()
     {
         //load file (json)
-        students = new Dictionary<string, Student>();
+        if (File.Exists("students.json"))
+            using (var fs = File.OpenRead("students.json"))
+                students = JsonSerializer.Deserialize<Dictionary<string, Student>>(fs);
+        else
+            students = new Dictionary<string, Student>();
     }
 
     public List<Student> Search(string text)
@@ -50,5 +55,7 @@ class StudentDB
     void Save()
     {
         // save file (json)
+        using (var fs = File.Create("students.json"))
+            JsonSerializer.Serialize(fs, students);
     }
 }

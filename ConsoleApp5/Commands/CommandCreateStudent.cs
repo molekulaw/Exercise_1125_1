@@ -1,4 +1,4 @@
-﻿class CommandCreateStudent : CommandStudent
+﻿internal class CommandCreateStudent : CommandUser, IUndoCommand
 {
     private StudentDB studentDB;
 
@@ -6,11 +6,11 @@
     {
         this.studentDB = studentDB;
     }
-
+    Student newStudent;
     public override void Execute()
     {
         Console.WriteLine("Создание студента...");
-        Student newStudent = studentDB.Create();
+        newStudent = studentDB.Create();
         Console.WriteLine("Укажите имя...");
         newStudent.FirstName = Console.ReadLine();
         Console.WriteLine("Укажите фамилию...");
@@ -19,5 +19,11 @@
             Console.WriteLine("Студент создан!");
         else
             Console.WriteLine("Возникли необъяснимые ошибки! Информация потеряна.");
+    }
+
+    public void Undo()
+    {
+        studentDB.Delete(newStudent);
+        Console.WriteLine("Отмена команды создания студента");
     }
 }

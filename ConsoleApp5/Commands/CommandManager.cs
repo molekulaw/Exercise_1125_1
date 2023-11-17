@@ -1,6 +1,8 @@
-﻿class CommandManager
+﻿using ConsoleApp5.Commands;
+
+class CommandManager
 {
-    Dictionary<string, CommandStudent> commands = new();
+    Dictionary<string, (Type type, object[] args)> commands = new();
     public void Start()
     {
         string command;
@@ -11,19 +13,32 @@
             TestCommand(command);
         }
         while (command != "exit");
-
     }
+    
+    Stack<IUndoCommand> historyCommands = new Stack<IUndoCommand>();
 
     void TestCommand(string? command)
     {
         if (commands.ContainsKey(command))
         {
-            commands[command].Execute();
+            Type typeCommand = commands[command].type;
+            var commandInstance = (CommandUser)Activator.CreateInstance(typeCommand, commands[command].args);
+            commandInstance.Execute();
+            if (commandInstance is IUndoCommand iCommand)
+                historyCommands.Push(iCommand);            
         }
     }
 
-    public void RegisterCommand(string command, CommandStudent commandStudent)
+    public void UndoLastCommand()
     {
-        commands.Add(command, commandStudent);
+        if (historyCommands.Count == 0)
+            return;
+        IUndoCommand lastCommand = historyCommands.Pop();
+        lastCommand.Undo();
+    }
+
+    public void RegisterCommand(string command, Type commandStudent, params object[] args)
+    {
+        commands.Add(command, (commandStudent, args));
     }
 }
